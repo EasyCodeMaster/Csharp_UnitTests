@@ -1,3 +1,6 @@
+using EquipmentService;
+using EquipmentService.Model;
+using Moq;
 using System;
 using Xunit;
 
@@ -11,20 +14,47 @@ namespace EquipmentServiceTests
             // Mock: Simulate the behavior of service
 
             // Arrange
-            var employeeService = new EmployeeServiceMock();
-            var bundleFactory = new EquipmentBundleFactoryMock();
-            var auditService = new AuditServiceMock();
-
             var employeeId = new Guid();
-            var service = new EquipmentService.EquipmentService(bundleFactory, employeeService, auditService);
+            var testItem = new EquipmentItem
+            {
+                Name = "Test"
+            };
+
+            var testBundle = new EquipmentBundle();
+            testBundle.Add(testItem);
+
+            // bundle Mock
+            var bundleFactoryMock = new Mock<IEquipmentBundleFactory>();
+            // function to Mock
+            bundleFactoryMock.Setup(x => x.CreateStandardBundle()).Returns(testBundle);
+
+
+            // Mock Employee
+            var testEmployee = new Employee
+            {
+                EmployeeId = employeeId,
+                Bundle = testBundle
+            };
+            var employeeServiceMock = new Mock<IEmployeeService>();
+            // connect will work with any Guid or any bundle
+            //employeeServiceMock.Setup(x => x.Connect(It.Is<Guid>(y => y == employeeId), It.IsAny<EquipmentBundle>()))
+            //    .Returns(testEmployee);
+            employeeServiceMock.Setup(x => x.Connect(It.IsAny<Guid>(), It.IsAny<EquipmentBundle>()))
+                .Returns(testEmployee);
+
+            var auditServiceMock = new Mock<IAuditService>();
+
+            var service = new EquipmentService.EquipmentService(bundleFactoryMock.Object, employeeServiceMock.Object, auditServiceMock.Object);
+
 
             // Act
             var result = service.AssignStandardBundleToEmployee(employeeId);
 
+
             // Assert
             Assert.Equal(employeeId, result.EmployeeId);
             Assert.Single(result.Bundle.Items);
-            Assert.True(auditService.WriteFunctionCalled);
+            auditServiceMock.Verify(x => x.WriteEmployeeInformation(It.Is<Employee>(y => y == testEmployee)));
         }
     }
 }
