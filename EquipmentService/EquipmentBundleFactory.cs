@@ -4,7 +4,7 @@ using System.Text;
 using EquipmentService.Model;
 namespace EquipmentService
 {
-    public class EquipmentBundleFactor: IEquipmentBundleFactory
+    public class EquipmentBundleFactory: IEquipmentBundleFactory
     {
         public EquipmentBundle CreateStandardBundle()
         {

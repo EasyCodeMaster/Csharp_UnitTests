@@ -5,7 +5,7 @@ using System.Text;
 
 namespace EquipmentService
 {
-    interface IAuditService
+    public interface IAuditService
     {
         void WriteEmployeeInformation(Employee employee);
     }
